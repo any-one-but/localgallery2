@@ -1020,6 +1020,18 @@
       flex-wrap: wrap;
     }
 
+    #banicOverlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 10000;
+      display: none;
+    }
+
+    #banicOverlay.active {
+      display: block;
+    }
+
     @media (max-width: 900px) {
       #app {
         grid-template-columns: min(300px, 42vw) 1fr;
@@ -1166,8 +1178,19 @@
       return { idx: parseInt(m[1], 10), clean: s.slice(m[0].length) };
     }
 
+    function toTitleCaps(str) {
+      return String(str || "").replace(/\w\S*/g, (txt) => {
+        return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase();
+      });
+    }
+
     function displayName(name) {
-      return splitIndexPrefix(name).clean;
+      const opt = (typeof WS !== "undefined" && WS.meta && WS.meta.options) ? WS.meta.options : null;
+      const hideIndices = opt ? !!opt.hideIndicesInNames : true;
+      let out = hideIndices ? splitIndexPrefix(name).clean : String(name || "");
+      if (opt && opt.hideUnderscoresInNames) out = out.replace(/_/g, " ");
+      if (opt && opt.forceTitleCaps) out = toTitleCaps(out);
+      return out;
     }
 
     function compareIndexedNames(a, b) {
@@ -1213,7 +1236,18 @@
         videoGallery: "muted",
         imageThumbSize: "medium",
         videoThumbSize: "medium",
-        showFileExtensions: true
+        showFileExtensions: true,
+        defaultFilterMode: "all",
+        defaultRandomMode: false,
+        defaultFolderBehavior: "slide",
+        defaultShowScores: false,
+        videoSkipStep: "10",
+        preloadNextMode: "off",
+        videoEndBehavior: "loop",
+        slideshowDefault: "cycle",
+        hideIndicesInNames: true,
+        hideUnderscoresInNames: false,
+        forceTitleCaps: false
       };
     }
 
@@ -1225,7 +1259,18 @@
         videoGallery: (src.videoGallery === "unmuted" || src.videoGallery === "muted" || src.videoGallery === "off") ? src.videoGallery : d.videoGallery,
         imageThumbSize: (src.imageThumbSize === "small" || src.imageThumbSize === "medium" || src.imageThumbSize === "high") ? src.imageThumbSize : d.imageThumbSize,
         videoThumbSize: (src.videoThumbSize === "small" || src.videoThumbSize === "medium" || src.videoThumbSize === "high") ? src.videoThumbSize : d.videoThumbSize,
-        showFileExtensions: (typeof src.showFileExtensions === "boolean") ? src.showFileExtensions : d.showFileExtensions
+        showFileExtensions: (typeof src.showFileExtensions === "boolean") ? src.showFileExtensions : d.showFileExtensions,
+        defaultFilterMode: (src.defaultFilterMode === "all" || src.defaultFilterMode === "images" || src.defaultFilterMode === "videos" || src.defaultFilterMode === "gifs") ? src.defaultFilterMode : d.defaultFilterMode,
+        defaultRandomMode: (typeof src.defaultRandomMode === "boolean") ? src.defaultRandomMode : d.defaultRandomMode,
+        defaultFolderBehavior: (src.defaultFolderBehavior === "stop" || src.defaultFolderBehavior === "loop" || src.defaultFolderBehavior === "slide") ? src.defaultFolderBehavior : d.defaultFolderBehavior,
+        defaultShowScores: (typeof src.defaultShowScores === "boolean") ? src.defaultShowScores : d.defaultShowScores,
+        videoSkipStep: (src.videoSkipStep === "3" || src.videoSkipStep === "5" || src.videoSkipStep === "10" || src.videoSkipStep === "30") ? src.videoSkipStep : d.videoSkipStep,
+        preloadNextMode: (src.preloadNextMode === "off" || src.preloadNextMode === "on" || src.preloadNextMode === "ultra") ? src.preloadNextMode : d.preloadNextMode,
+        videoEndBehavior: (src.videoEndBehavior === "loop" || src.videoEndBehavior === "next" || src.videoEndBehavior === "stop") ? src.videoEndBehavior : d.videoEndBehavior,
+        slideshowDefault: (src.slideshowDefault === "cycle" || src.slideshowDefault === "1" || src.slideshowDefault === "3" || src.slideshowDefault === "5" || src.slideshowDefault === "10") ? src.slideshowDefault : d.slideshowDefault,
+        hideIndicesInNames: (typeof src.hideIndicesInNames === "boolean") ? src.hideIndicesInNames : d.hideIndicesInNames,
+        hideUnderscoresInNames: (typeof src.hideUnderscoresInNames === "boolean") ? src.hideUnderscoresInNames : d.hideUnderscoresInNames,
+        forceTitleCaps: (typeof src.forceTitleCaps === "boolean") ? src.forceTitleCaps : d.forceTitleCaps
       };
       return out;
     }
@@ -1275,6 +1320,15 @@
       optionsStatusLabel.textContent = text || "—";
     }
 
+    function applyDefaultViewFromOptions() {
+      const opt = WS.meta && WS.meta.options ? WS.meta.options : null;
+      if (!opt) return;
+      WS.view.filterMode = String(opt.defaultFilterMode || "all");
+      WS.view.randomMode = !!opt.defaultRandomMode;
+      WS.view.folderBehavior = String(opt.defaultFolderBehavior || "slide");
+      WS.view.showFolderScores = !!opt.defaultShowScores;
+    }
+
     function applyOptionsEverywhere(invalidateThumbs = false) {
       if (!WS.root) {
         syncButtons();
@@ -1311,7 +1365,10 @@
         storageKey: "",
         fsRootHandle: null,
         fsSysDirHandle: null,
-        fsLogFileHandle: null,
+        fsScoresFileHandle: null,
+        fsTagsFileHandle: null,
+        fsOptionsFileHandle: null,
+        fsLegacyFileHandle: null,
         saveTimer: null,
         dirty: false,
         options: normalizeOptions(null)
@@ -1414,16 +1471,16 @@
       WS.meta.storageKey = "";
       WS.meta.fsRootHandle = null;
       WS.meta.fsSysDirHandle = null;
-      WS.meta.fsLogFileHandle = null;
+      WS.meta.fsScoresFileHandle = null;
+      WS.meta.fsTagsFileHandle = null;
+      WS.meta.fsOptionsFileHandle = null;
+      WS.meta.fsLegacyFileHandle = null;
       WS.meta.dirty = false;
       WS.meta.options = normalizeOptions(null);
       if (WS.meta.saveTimer) { clearTimeout(WS.meta.saveTimer); WS.meta.saveTimer = null; }
 
-      WS.view.filterMode = "all";
-      WS.view.randomMode = false;
+      applyDefaultViewFromOptions();
       WS.view.loopWithinDir = false;
-      WS.view.folderBehavior = "slide";
-      WS.view.showFolderScores = false;
       WS.view.randomSeed = 0;
       WS.view.randomCache = new Map();
       WS.view.dirLoopRepeats = 3;
@@ -1464,6 +1521,7 @@
 
       WS.imageThumbQueue = [];
       WS.imageThumbActive = 0;
+      PRELOAD_CACHE = new Map();
 
       renderDirectoriesPane();
       renderPreviewPane(true);
@@ -1530,6 +1588,10 @@
     mainStatusMessageEl.id = "mainStatusMessage";
     document.body.appendChild(mainStatusMessageEl);
 
+    const banicOverlayEl = document.createElement("div");
+    banicOverlayEl.id = "banicOverlay";
+    document.body.appendChild(banicOverlayEl);
+
     let MAIN_STATUS_TIMEOUT = null;
 
     let VIEWER_MODE = false;
@@ -1553,10 +1615,22 @@
 
     let VIDEO_CARRY = { active: false, fileId: null, time: 0, wasPlaying: false };
 
+    let PRELOAD_CACHE = new Map();
+
     let TAG_EDIT_PATH = null;
 
     let HELP_OPEN = false;
     let OPTIONS_OPEN = false;
+
+    let BANIC_ACTIVE = false;
+    let BANIC_STATE = { preview: null, viewer: null, slideshowWasActive: false };
+    const BANIC_LINKS = [
+      "https://www.youtube.com/",
+      "https://www.google.com/",
+      "https://www.coolmathgames.com/",
+      "https://www.wikipedia.org/",
+      "https://www.nasa.gov/"
+    ];
 
     /* =========================================================
        Status/progress helpers
@@ -1589,6 +1663,60 @@
       }, 1200);
     }
 
+    function captureVideoState(vid) {
+      if (!vid) return null;
+      return {
+        muted: !!vid.muted,
+        paused: !!vid.paused
+      };
+    }
+
+    function applyBanicState(active) {
+      if (active === BANIC_ACTIVE) return;
+      BANIC_ACTIVE = active;
+
+      if (BANIC_ACTIVE) {
+        BANIC_STATE.preview = captureVideoState(previewVideoEl);
+        BANIC_STATE.viewer = captureVideoState(viewerVideoEl);
+        BANIC_STATE.slideshowWasActive = WS.view.slideshowActive;
+
+        if (WS.view.slideshowActive) stopSlideshow();
+
+        const vids = Array.from(document.querySelectorAll("video"));
+        vids.forEach((vid) => {
+          try { vid.pause(); } catch {}
+          vid.muted = true;
+        });
+        banicOverlayEl.classList.add("active");
+        const link = BANIC_LINKS[Math.floor(Math.random() * BANIC_LINKS.length)];
+        try {
+          const win = window.open(link, "_blank");
+          if (win && win.focus) win.focus();
+        } catch {}
+        return;
+      }
+
+      banicOverlayEl.classList.remove("active");
+      const restore = (vid, state) => {
+        if (!vid || !state) return;
+        vid.muted = !!state.muted;
+        if (!state.paused) { try { vid.play(); } catch {} }
+      };
+      restore(previewVideoEl, BANIC_STATE.preview);
+      restore(viewerVideoEl, BANIC_STATE.viewer);
+      if (BANIC_STATE.slideshowWasActive) {
+        const mode = slideshowBehavior();
+        if (mode === "cycle") {
+          const ms = WS.view.slideshowDurations[WS.view.slideshowModeIndex] | 0;
+          if (ms) startSlideshow(ms);
+        } else {
+          const seconds = parseInt(mode, 10);
+          if (Number.isFinite(seconds) && seconds > 0) startSlideshow(seconds * 1000);
+        }
+      }
+      BANIC_STATE = { preview: null, viewer: null, slideshowWasActive: false };
+    }
+
     function updateModePill() {
       const f = WS.view.filterMode === "all" ? "All" : (WS.view.filterMode === "images" ? "Images only" : (WS.view.filterMode === "videos" ? "Videos only" : "GIFs only"));
       const r = WS.view.randomMode ? "On" : "Off";
@@ -1611,7 +1739,7 @@
 
       <h2>Load a folder (writable)</h2>
       <ul>
-        <li>Click <code>Load Folder</code> to pick a root folder. The app will scan for images/videos and create a small <code>.local-gallery</code> folder to store your votes/tags log.</li>
+        <li>Click <code>Load Folder</code> to pick a root folder. The app will scan for images/videos and create a small <code>.local-gallery</code> folder to store your votes/tags/preferences logs.</li>
         <li>Only media files are shown (images + videos). Filter modes can restrict what appears.</li>
       </ul>
 
@@ -1678,18 +1806,23 @@
       <h2>Video controls</h2>
       <ul>
         <li><code>Space</code> toggles play/pause (in preview or gallery when a video is active).</li>
-        <li><code>Q</code>/<code>U</code> seek -10s, <code>E</code>/<code>O</code> seek +10s.</li>
+        <li><code>Q</code>/<code>U</code> seek backward, <code>E</code>/<code>O</code> seek forward (step set in Options).</li>
+      </ul>
+
+      <h2>BANIC! button</h2>
+      <ul>
+        <li>Press <code>B</code> to trigger the BANIC! button (mutes Local Gallery, blacks out the screen, and opens a harmless site). Press <code>B</code> again to resume.</li>
       </ul>
 
       <h2>Slideshow</h2>
       <ul>
-        <li>Press <code>Shift</code> to cycle slideshow speed (Off → 1s → 3s → 5s → 10s → Off).</li>
+        <li>Press <code>Shift</code> to toggle the slideshow speed set in Options (or cycle if set to cycle).</li>
         <li>Slideshow advances images automatically. Videos are allowed to play and advance on end.</li>
       </ul>
 
       <h2>Scores (folder voting)</h2>
       <ul>
-        <li>Scores are <b>off by default</b>. Toggle with <code>Scores: Off/On</code>.</li>
+        <li>Scores default to the option set in <code>Preferences</code>. Toggle with <code>Scores: Off/On</code>.</li>
         <li>When enabled, folders show ▲/▼ buttons to bump their score.</li>
         <li>Use <code>Sort: Name/Score</code> to sort folders by score or name.</li>
       </ul>
@@ -1781,6 +1914,51 @@
         { value: "off", label: "No autoplay" }
       ];
 
+      const filterModes = [
+        { value: "all", label: "All media" },
+        { value: "images", label: "Images only" },
+        { value: "videos", label: "Videos only" },
+        { value: "gifs", label: "GIFs only" }
+      ];
+
+      const onOffModes = [
+        { value: "on", label: "On" },
+        { value: "off", label: "Off" }
+      ];
+
+      const folderModes = [
+        { value: "stop", label: "Stop" },
+        { value: "loop", label: "Loop" },
+        { value: "slide", label: "Slide" }
+      ];
+
+      const skipSteps = [
+        { value: "3", label: "3 seconds" },
+        { value: "5", label: "5 seconds" },
+        { value: "10", label: "10 seconds" },
+        { value: "30", label: "30 seconds" }
+      ];
+
+      const preloadModes = [
+        { value: "off", label: "Off" },
+        { value: "on", label: "On" },
+        { value: "ultra", label: "Ultra (aggressive)" }
+      ];
+
+      const videoEndModes = [
+        { value: "loop", label: "Loop video" },
+        { value: "next", label: "Advance to next item" },
+        { value: "stop", label: "Stop at end" }
+      ];
+
+      const slideshowModes = [
+        { value: "cycle", label: "Cycle speeds (current behavior)" },
+        { value: "1", label: "Toggle 1s" },
+        { value: "3", label: "Toggle 3s" },
+        { value: "5", label: "Toggle 5s" },
+        { value: "10", label: "Toggle 10s" }
+      ];
+
       const thumbModes = [
         { value: "small", label: "Super small" },
         { value: "medium", label: "Medium" },
@@ -1788,11 +1966,23 @@
       ];
 
       optionsBodyEl.innerHTML = `
-        <div class="label" style="margin-bottom:8px;">Preferences are saved in the same log file as scores/tags (or localStorage fallback).</div>
+        <div class="label" style="margin-bottom:8px;">Preferences are saved alongside scores/tags (or localStorage fallback).</div>
 
         <h2>Video</h2>
         ${makeSelectRow("Video audio (preview)", "Controls autoplay + mute in the in-pane preview player.", "opt_videoPreview", String(opt.videoPreview || "muted"), vidModes)}
         ${makeSelectRow("Video audio (gallery)", "Controls autoplay + mute in fullscreen gallery mode.", "opt_videoGallery", String(opt.videoGallery || "muted"), vidModes)}
+
+        <h2>Defaults</h2>
+        ${makeSelectRow("Default media filter", "Initial filter when loading a workspace (hotkeys can still change it).", "opt_defaultFilterMode", String(opt.defaultFilterMode || "all"), filterModes)}
+        ${makeSelectRow("Default random mode", "Initial random mode (hotkeys can still change it).", "opt_defaultRandomMode", opt.defaultRandomMode ? "on" : "off", onOffModes)}
+        ${makeSelectRow("Default folder behavior", "Initial folder behavior (hotkeys can still change it).", "opt_defaultFolderBehavior", String(opt.defaultFolderBehavior || "slide"), folderModes)}
+        ${makeSelectRow("Scores on/off default", "Initial folder score display state (hotkeys can still change it).", "opt_defaultShowScores", opt.defaultShowScores ? "on" : "off", onOffModes)}
+
+        <h2>Playback</h2>
+        ${makeSelectRow("Video skip step", "Seek increment for Q/E/U/O shortcuts.", "opt_videoSkipStep", String(opt.videoSkipStep || "10"), skipSteps)}
+        ${makeSelectRow("Preload next item", "Preload the next item for smoother browsing.", "opt_preloadNextMode", String(opt.preloadNextMode || "off"), preloadModes)}
+        ${makeSelectRow("Video end behavior", "What happens when a video ends (outside slideshow).", "opt_videoEndBehavior", String(opt.videoEndBehavior || "loop"), videoEndModes)}
+        ${makeSelectRow("Slideshow speed", "Controls Shift behavior for slideshows.", "opt_slideshowDefault", String(opt.slideshowDefault || "cycle"), slideshowModes)}
 
         <h2>Thumbnails</h2>
         ${makeSelectRow("Image thumbnail size", "Controls generated image thumbnail quality (smaller is faster).", "opt_imageThumbSize", String(opt.imageThumbSize || "medium"), thumbModes)}
@@ -1800,25 +1990,29 @@
 
         <h2>Display</h2>
         ${makeCheckRow("Show file extensions", "Show .jpg / .mp4 in file names.", "opt_showFileExtensions", !!opt.showFileExtensions)}
+        ${makeCheckRow("Hide indices from display names", "Hide numeric prefixes like '01 - '.", "opt_hideIndicesInNames", !!opt.hideIndicesInNames)}
+        ${makeCheckRow("Hide underscores from display names", "Replace underscores with spaces.", "opt_hideUnderscoresInNames", !!opt.hideUnderscoresInNames)}
+        ${makeCheckRow("Force title caps in display names", "Apply Title Case to display names.", "opt_forceTitleCaps", !!opt.forceTitleCaps)}
       `;
 
-      const bindSelect = (id, key, invalidateThumbs) => {
+      const bindSelect = (id, key, invalidateThumbs, onChange, valueParser) => {
         const el = $(id);
         if (!el) return;
         el.addEventListener("click", (e) => e.stopPropagation());
         el.addEventListener("keydown", (e) => e.stopPropagation());
         el.addEventListener("change", () => {
           const next = {};
-          next[key] = el.value;
+          next[key] = valueParser ? valueParser(el.value) : el.value;
           WS.meta.options = normalizeOptions(Object.assign({}, WS.meta.options || {}, next));
           WS.meta.dirty = true;
           metaScheduleSave();
           setOptionsStatus("Saved");
+          if (typeof onChange === "function") onChange(el.value);
           applyOptionsEverywhere(!!invalidateThumbs);
         });
       };
 
-      const bindCheck = (id, key) => {
+      const bindCheck = (id, key, onChange) => {
         const el = $(id);
         if (!el) return;
         el.addEventListener("click", (e) => e.stopPropagation());
@@ -1830,15 +2024,37 @@
           WS.meta.dirty = true;
           metaScheduleSave();
           setOptionsStatus("Saved");
+          if (typeof onChange === "function") onChange(!!el.checked);
           applyOptionsEverywhere(false);
         });
       };
 
       bindSelect("opt_videoPreview", "videoPreview", false);
       bindSelect("opt_videoGallery", "videoGallery", false);
+      bindSelect("opt_defaultFilterMode", "defaultFilterMode", false, () => {
+        applyDefaultViewFromOptions();
+      });
+      bindSelect("opt_defaultRandomMode", "defaultRandomMode", false, () => {
+        applyDefaultViewFromOptions();
+      }, (val) => val === "on");
+      bindSelect("opt_defaultFolderBehavior", "defaultFolderBehavior", false, () => {
+        applyDefaultViewFromOptions();
+      });
+      bindSelect("opt_defaultShowScores", "defaultShowScores", false, () => {
+        applyDefaultViewFromOptions();
+      }, (val) => val === "on");
+      bindSelect("opt_videoSkipStep", "videoSkipStep", false);
+      bindSelect("opt_preloadNextMode", "preloadNextMode", false, (val) => {
+        if (val === "off") PRELOAD_CACHE = new Map();
+      });
+      bindSelect("opt_videoEndBehavior", "videoEndBehavior", false);
+      bindSelect("opt_slideshowDefault", "slideshowDefault", false);
       bindSelect("opt_imageThumbSize", "imageThumbSize", true);
       bindSelect("opt_videoThumbSize", "videoThumbSize", true);
       bindCheck("opt_showFileExtensions", "showFileExtensions");
+      bindCheck("opt_hideIndicesInNames", "hideIndicesInNames");
+      bindCheck("opt_hideUnderscoresInNames", "hideUnderscoresInNames");
+      bindCheck("opt_forceTitleCaps", "forceTitleCaps");
     }
 
     function resetOptionsToDefaults() {
@@ -2157,6 +2373,48 @@
       })(WS.root);
     }
 
+    function metaMakeScoresLogObject() {
+      const folders = {};
+      for (const [path, node] of WS.dirByPath.entries()) {
+        const fp = WS.meta.dirFingerprints.get(path) || 0;
+        folders[path] = { score: metaGetScore(path), fp: fp >>> 0 };
+      }
+      return {
+        schema: 1,
+        updatedAt: Date.now(),
+        sortMode: WS.meta.dirSortMode === "score" ? "score" : "name",
+        folders
+      };
+    }
+
+    function metaMakeTagsLogObject() {
+      const folders = {};
+      const tagByFp = {};
+      for (const [path, node] of WS.dirByPath.entries()) {
+        const fp = WS.meta.dirFingerprints.get(path) || 0;
+        const tags = metaGetTags(path);
+        folders[path] = { fp: fp >>> 0, tags: tags };
+        if (tags && tags.length) {
+          const k = String(fp >>> 0);
+          if (!tagByFp[k]) tagByFp[k] = tags.slice();
+        }
+      }
+      return {
+        schema: 1,
+        updatedAt: Date.now(),
+        folders,
+        tagByFp
+      };
+    }
+
+    function metaMakeOptionsLogObject() {
+      return {
+        schema: 1,
+        updatedAt: Date.now(),
+        options: normalizeOptions(WS.meta.options || null)
+      };
+    }
+
     function metaMakeLogObject() {
       const folders = {};
       const tagByFp = {};
@@ -2177,6 +2435,99 @@
         tagByFp,
         options: normalizeOptions(WS.meta.options || null)
       };
+    }
+
+    function metaApplyScoresLog(log) {
+      if (!log || typeof log !== "object") return;
+
+      const sortMode = log.sortMode === "score" ? "score" : "name";
+      WS.meta.dirSortMode = sortMode;
+
+      const folders = log.folders && typeof log.folders === "object" ? log.folders : {};
+      const oldByPath = new Map();
+      const oldByFp = new Map();
+
+      for (const p of Object.keys(folders)) {
+        const it = folders[p];
+        const sc = (it && Number.isFinite(it.score)) ? (it.score | 0) : 0;
+        const fp = (it && Number.isFinite(it.fp)) ? (it.fp >>> 0) : 0;
+        oldByPath.set(p, { score: sc, fp });
+        if (!oldByFp.has(fp)) oldByFp.set(fp, []);
+        oldByFp.get(fp).push({ path: p, score: sc });
+      }
+
+      const claimed = new Set();
+      WS.meta.dirScores.clear();
+
+      for (const [path, node] of WS.dirByPath.entries()) {
+        const fp = WS.meta.dirFingerprints.get(path) || 0;
+        if (oldByPath.has(path)) {
+          WS.meta.dirScores.set(path, oldByPath.get(path).score | 0);
+          claimed.add(path);
+          continue;
+        }
+        const list = oldByFp.get(fp >>> 0) || null;
+        if (list && list.length) {
+          let picked = null;
+          for (let i = 0; i < list.length; i++) {
+            const cand = list[i];
+            if (!claimed.has(cand.path)) { picked = cand; break; }
+          }
+          if (picked) {
+            WS.meta.dirScores.set(path, picked.score | 0);
+            claimed.add(picked.path);
+            continue;
+          }
+        }
+        WS.meta.dirScores.set(path, 0);
+      }
+    }
+
+    function metaApplyTagsLog(log) {
+      if (!log || typeof log !== "object") return;
+
+      const folders = log.folders && typeof log.folders === "object" ? log.folders : {};
+      const oldTagsByPath = new Map();
+
+      for (const p of Object.keys(folders)) {
+        const it = folders[p];
+        const tg = it && Array.isArray(it.tags) ? normalizeTagList(it.tags) : [];
+        if (tg.length) oldTagsByPath.set(p, tg);
+      }
+
+      const oldTagByFp = new Map();
+      if (log.tagByFp && typeof log.tagByFp === "object") {
+        for (const k of Object.keys(log.tagByFp)) {
+          const fp = (Number(k) >>> 0) || 0;
+          const tg = normalizeTagList(log.tagByFp[k]);
+          if (tg.length) oldTagByFp.set(fp >>> 0, tg);
+        }
+      }
+      if (!oldTagByFp.size) {
+        for (const [p, tg] of oldTagsByPath.entries()) {
+          const it = folders[p];
+          const fp = (it && Number.isFinite(it.fp)) ? (it.fp >>> 0) : 0;
+          if (!fp) continue;
+          if (!oldTagByFp.has(fp)) oldTagByFp.set(fp, tg.slice());
+        }
+      }
+
+      WS.meta.dirTags.clear();
+      for (const [path, node] of WS.dirByPath.entries()) {
+        if (oldTagsByPath.has(path)) {
+          WS.meta.dirTags.set(path, oldTagsByPath.get(path).slice());
+          continue;
+        }
+        const fp = WS.meta.dirFingerprints.get(path) || 0;
+        const tg = oldTagByFp.get(fp >>> 0) || [];
+        WS.meta.dirTags.set(path, tg.slice());
+      }
+    }
+
+    function metaApplyOptionsLog(log) {
+      if (!log || typeof log !== "object") return;
+      WS.meta.options = normalizeOptions(log.options || null);
+      applyDefaultViewFromOptions();
     }
 
     function metaApplyFromLog(log) {
@@ -2259,6 +2610,7 @@
         WS.meta.dirTags.set(path, tg.slice());
       }
 
+      applyDefaultViewFromOptions();
       syncMetaButtons();
       renderOptionsUi();
     }
@@ -2269,25 +2621,36 @@
       try { return JSON.parse(t); } catch { return null; }
     }
 
-    function metaLocalKey() {
+    function metaLocalKeys() {
       const k = String(WS.meta.storageKey || "");
-      return k || "";
+      if (!k) return null;
+      return {
+        scores: `LocalGalleryScores::${k}`,
+        tags: `LocalGalleryTags::${k}`,
+        options: `LocalGalleryPreferences::${k}`,
+        legacy: `LocalGalleryVotes::${k}`
+      };
     }
 
-    function metaLoadLocal() {
-      const k = metaLocalKey();
-      if (!k) return null;
+    function metaLoadLocalDoc(key) {
+      if (!key) return null;
       try {
-        const txt = localStorage.getItem(k);
+        const txt = localStorage.getItem(key);
         return metaParseText(txt);
       } catch { return null; }
     }
 
+    function metaSaveLocalDoc(key, obj) {
+      if (!key) return;
+      try { localStorage.setItem(key, JSON.stringify(obj)); } catch {}
+    }
+
     function metaSaveLocalNow() {
-      const k = metaLocalKey();
-      if (!k) return;
-      const obj = metaMakeLogObject();
-      try { localStorage.setItem(k, JSON.stringify(obj)); } catch {}
+      const keys = metaLocalKeys();
+      if (!keys) return;
+      metaSaveLocalDoc(keys.scores, metaMakeScoresLogObject());
+      metaSaveLocalDoc(keys.tags, metaMakeTagsLogObject());
+      metaSaveLocalDoc(keys.options, metaMakeOptionsLogObject());
       WS.meta.dirty = false;
     }
 
@@ -2295,10 +2658,16 @@
       if (!rootHandle) return false;
       try {
         const sys = await rootHandle.getDirectoryHandle(".local-gallery", { create: true });
-        const logFile = await sys.getFileHandle("folder-votes.log.json", { create: true });
+        const scoresFile = await sys.getFileHandle("folder-scores.log.json", { create: true });
+        const tagsFile = await sys.getFileHandle("folder-tags.log.json", { create: true });
+        const optionsFile = await sys.getFileHandle("preferences.log.json", { create: true });
+        const legacyFile = await sys.getFileHandle("folder-votes.log.json", { create: true });
         WS.meta.fsRootHandle = rootHandle;
         WS.meta.fsSysDirHandle = sys;
-        WS.meta.fsLogFileHandle = logFile;
+        WS.meta.fsScoresFileHandle = scoresFile;
+        WS.meta.fsTagsFileHandle = tagsFile;
+        WS.meta.fsOptionsFileHandle = optionsFile;
+        WS.meta.fsLegacyFileHandle = legacyFile;
         WS.meta.storageMode = "fs";
         return true;
       } catch {
@@ -2306,8 +2675,7 @@
       }
     }
 
-    async function metaLoadFs() {
-      const fh = WS.meta.fsLogFileHandle;
+    async function metaLoadFsDoc(fh) {
       if (!fh) return null;
       try {
         const f = await fh.getFile();
@@ -2318,17 +2686,24 @@
       }
     }
 
-    async function metaSaveFsNow() {
-      const fh = WS.meta.fsLogFileHandle;
+    async function metaSaveFsDoc(fh, obj) {
       if (!fh) return;
-      const obj = metaMakeLogObject();
       const txt = JSON.stringify(obj);
       try {
         const writable = await fh.createWritable();
         await writable.write(txt);
         await writable.close();
-        WS.meta.dirty = false;
       } catch {}
+    }
+
+    async function metaSaveFsNow() {
+      const scores = WS.meta.fsScoresFileHandle;
+      const tags = WS.meta.fsTagsFileHandle;
+      const options = WS.meta.fsOptionsFileHandle;
+      await metaSaveFsDoc(scores, metaMakeScoresLogObject());
+      await metaSaveFsDoc(tags, metaMakeTagsLogObject());
+      await metaSaveFsDoc(options, metaMakeOptionsLogObject());
+      WS.meta.dirty = false;
     }
 
     function metaScheduleSave() {
@@ -2345,8 +2720,22 @@
       metaComputeFingerprints();
 
       if (WS.meta.storageMode === "local") {
-        const log = metaLoadLocal();
-        if (log) metaApplyFromLog(log);
+        const keys = metaLocalKeys();
+        const scoresLog = keys ? metaLoadLocalDoc(keys.scores) : null;
+        const tagsLog = keys ? metaLoadLocalDoc(keys.tags) : null;
+        const optionsLog = keys ? metaLoadLocalDoc(keys.options) : null;
+
+        if (scoresLog) metaApplyScoresLog(scoresLog);
+        if (tagsLog) metaApplyTagsLog(tagsLog);
+        if (optionsLog) metaApplyOptionsLog(optionsLog);
+
+        if (!scoresLog && !tagsLog && !optionsLog && keys) {
+          /* LEGACY MIGRATION (remove later): read combined log and split it. */
+          const legacyLog = metaLoadLocalDoc(keys.legacy);
+          if (legacyLog) {
+            metaApplyFromLog(legacyLog);
+          }
+        }
       }
 
       WS.meta.dirty = true;
@@ -2357,8 +2746,21 @@
 
     async function metaInitForCurrentWorkspaceFs() {
       metaComputeFingerprints();
-      const log = await metaLoadFs();
-      if (log) metaApplyFromLog(log);
+      const scoresLog = await metaLoadFsDoc(WS.meta.fsScoresFileHandle);
+      const tagsLog = await metaLoadFsDoc(WS.meta.fsTagsFileHandle);
+      const optionsLog = await metaLoadFsDoc(WS.meta.fsOptionsFileHandle);
+
+      if (scoresLog) metaApplyScoresLog(scoresLog);
+      if (tagsLog) metaApplyTagsLog(tagsLog);
+      if (optionsLog) metaApplyOptionsLog(optionsLog);
+
+      if (!scoresLog && !tagsLog && !optionsLog) {
+        /* LEGACY MIGRATION (remove later): read combined log and split it. */
+        const legacyLog = await metaLoadFsDoc(WS.meta.fsLegacyFileHandle);
+        if (legacyLog) {
+          metaApplyFromLog(legacyLog);
+        }
+      }
       WS.meta.dirty = true;
       metaScheduleSave();
       syncMetaButtons();
@@ -2427,7 +2829,7 @@
       WS.view.previewLoopRepeats = 3;
 
       WS.meta.storageMode = "local";
-      WS.meta.storageKey = "LocalGalleryVotes::" + String(WS.view.randomSeed >>> 0);
+      WS.meta.storageKey = String(WS.view.randomSeed >>> 0);
 
       metaInitForCurrentWorkspace();
 
@@ -2528,10 +2930,10 @@
       const ok = await metaEnsureFsHandles(rootHandle);
       if (!ok) {
         WS.meta.storageMode = "local";
-        WS.meta.storageKey = "LocalGalleryVotes::" + String(WS.view.randomSeed >>> 0);
+        WS.meta.storageKey = String(WS.view.randomSeed >>> 0);
         metaInitForCurrentWorkspace();
       } else {
-        WS.meta.storageKey = "LocalGalleryVotes::" + String(WS.view.randomSeed >>> 0);
+        WS.meta.storageKey = String(WS.view.randomSeed >>> 0);
         await metaInitForCurrentWorkspaceFs();
       }
 
@@ -3931,6 +4333,49 @@
       try { rec.url = URL.createObjectURL(rec.file); return rec.url; } catch { return null; }
     }
 
+    function preloadMediaRecord(rec, aggressive) {
+      if (!rec) return;
+      const url = ensureMediaUrl(rec);
+      if (!url) return;
+      if (PRELOAD_CACHE.has(url)) return;
+      if (rec.type === "image") {
+        const img = new Image();
+        img.src = url;
+        PRELOAD_CACHE.set(url, img);
+        return;
+      }
+      const vid = document.createElement("video");
+      vid.preload = aggressive ? "auto" : "metadata";
+      vid.muted = true;
+      vid.playsInline = true;
+      vid.src = url;
+      try { if (aggressive) vid.load(); } catch {}
+      PRELOAD_CACHE.set(url, vid);
+    }
+
+    function preloadNextMedia(items, startIdx) {
+      const mode = preloadMode();
+      if (mode === "off") return;
+      if (!Array.isArray(items) || !items.length) return;
+      const aggressive = (mode === "ultra");
+      const count = aggressive ? 3 : 1;
+      let idx = startIdx;
+      let found = 0;
+      let guard = 0;
+      while (found < count && guard < items.length * 2) {
+        idx = (idx + 1) % items.length;
+        const it = items[idx];
+        if (it && !it.isFolder) {
+          const rec = WS.fileById.get(it.id);
+          if (rec) {
+            preloadMediaRecord(rec, aggressive);
+            found++;
+          }
+        }
+        guard++;
+      }
+    }
+
     function ensurePreviewFileElements() {
       if (!previewViewportBox) {
         previewViewportBox = document.createElement("div");
@@ -3984,6 +4429,28 @@
     function galleryVideoMode() {
       const opt = WS.meta && WS.meta.options ? WS.meta.options : null;
       return opt ? String(opt.videoGallery || "muted") : "muted";
+    }
+
+    function videoSkipStepSeconds() {
+      const opt = WS.meta && WS.meta.options ? WS.meta.options : null;
+      const raw = opt ? String(opt.videoSkipStep || "10") : "10";
+      const v = parseInt(raw, 10);
+      return Number.isFinite(v) ? v : 10;
+    }
+
+    function videoEndBehavior() {
+      const opt = WS.meta && WS.meta.options ? WS.meta.options : null;
+      return opt ? String(opt.videoEndBehavior || "loop") : "loop";
+    }
+
+    function slideshowBehavior() {
+      const opt = WS.meta && WS.meta.options ? WS.meta.options : null;
+      return opt ? String(opt.slideshowDefault || "cycle") : "cycle";
+    }
+
+    function preloadMode() {
+      const opt = WS.meta && WS.meta.options ? WS.meta.options : null;
+      return opt ? String(opt.preloadNextMode || "off") : "off";
     }
 
     function renderPreviewViewerItem(idx) {
@@ -4061,15 +4528,25 @@
 
       if (rec.type === "video") {
         const mode = previewVideoMode();
-        const doAuto = mode !== "off";
+        const doAuto = mode !== "off" && !BANIC_ACTIVE;
+        if (viewerVideoEl) { try { viewerVideoEl.pause(); } catch {} }
         previewVideoEl.autoplay = doAuto;
-        previewVideoEl.loop = !WS.view.slideshowActive;
-        previewVideoEl.muted = (mode === "muted");
-        previewVideoEl.onloadeddata = () => previewVideoEl.classList.add("ready");
+        previewVideoEl.onloadeddata = null;
         previewVideoEl.onended = null;
+        previewVideoEl.muted = (mode === "muted") || BANIC_ACTIVE;
+        const endBehavior = videoEndBehavior();
         if (WS.view.slideshowActive) {
+          previewVideoEl.loop = false;
           previewVideoEl.onended = () => { if (WS.view.slideshowActive) viewerStep(1); };
+        } else if (endBehavior === "loop") {
+          previewVideoEl.loop = true;
+        } else if (endBehavior === "next") {
+          previewVideoEl.loop = false;
+          previewVideoEl.onended = () => { if (!WS.view.slideshowActive) viewerStep(1); };
+        } else {
+          previewVideoEl.loop = false;
         }
+        previewVideoEl.onloadeddata = () => previewVideoEl.classList.add("ready");
 
         const src = ensureMediaUrl(rec) || "";
         const same = previewVideoEl.src === src;
@@ -4084,6 +4561,7 @@
           requestAnimationFrame(() => { previewVideoEl.classList.add("ready"); });
         }
         if (doAuto) { try { previewVideoEl.play(); } catch {} }
+        preloadNextMedia(viewerItems, viewerIndex);
         return;
       }
 
@@ -4096,6 +4574,7 @@
       if (previewImgEl.complete && previewImgEl.naturalWidth > 0) {
         requestAnimationFrame(() => { previewImgEl.classList.add("ready"); });
       }
+      preloadNextMedia(viewerItems, viewerIndex);
     }
 
     function syncDirectoriesToViewerState() {
@@ -4725,6 +5204,38 @@
       else if (ACTIVE_MEDIA_SURFACE === "preview") renderPreviewViewerItem(viewerIndex);
     }
 
+    function handleSlideshowHotkey(useViewerStatus) {
+      const mode = slideshowBehavior();
+      if (mode === "cycle") {
+        WS.view.slideshowModeIndex = (WS.view.slideshowModeIndex + 1) % WS.view.slideshowDurations.length;
+        const ms = WS.view.slideshowDurations[WS.view.slideshowModeIndex] | 0;
+        if (!ms) {
+          stopSlideshow();
+          if (useViewerStatus) showStatusMessage("Slideshow: Off");
+          else showSlideshowMessage("Slideshow: Off");
+        } else {
+          startSlideshow(ms);
+          if (useViewerStatus) showStatusMessage(`Slideshow: ${Math.round(ms / 1000)}s`);
+          else showSlideshowMessage(`Slideshow: ${Math.round(ms / 1000)}s`);
+        }
+        return;
+      }
+
+      const seconds = parseInt(mode, 10);
+      const ms = Number.isFinite(seconds) ? seconds * 1000 : 0;
+      if (WS.view.slideshowActive) {
+        stopSlideshow();
+        if (useViewerStatus) showStatusMessage("Slideshow: Off");
+        else showSlideshowMessage("Slideshow: Off");
+        return;
+      }
+      if (ms > 0) {
+        startSlideshow(ms);
+        if (useViewerStatus) showStatusMessage(`Slideshow: ${Math.round(ms / 1000)}s`);
+        else showSlideshowMessage(`Slideshow: ${Math.round(ms / 1000)}s`);
+      }
+    }
+
     function hideOverlay() {
       try {
         const item = viewerItems[viewerIndex] || null;
@@ -4990,15 +5501,25 @@
 
       if (rec.type === "video") {
         const mode = galleryVideoMode();
-        const doAuto = mode !== "off";
+        const doAuto = mode !== "off" && !BANIC_ACTIVE;
+        if (previewVideoEl) { try { previewVideoEl.pause(); } catch {} }
         viewerVideoEl.autoplay = doAuto;
-        viewerVideoEl.loop = !WS.view.slideshowActive;
-        viewerVideoEl.muted = (mode === "muted");
-        viewerVideoEl.onloadeddata = () => viewerVideoEl.classList.add("ready");
+        viewerVideoEl.onloadeddata = null;
         viewerVideoEl.onended = null;
+        viewerVideoEl.muted = (mode === "muted") || BANIC_ACTIVE;
+        const endBehavior = videoEndBehavior();
         if (WS.view.slideshowActive) {
+          viewerVideoEl.loop = false;
           viewerVideoEl.onended = () => { if (WS.view.slideshowActive) viewerStep(1); };
+        } else if (endBehavior === "loop") {
+          viewerVideoEl.loop = true;
+        } else if (endBehavior === "next") {
+          viewerVideoEl.loop = false;
+          viewerVideoEl.onended = () => { if (!WS.view.slideshowActive) viewerStep(1); };
+        } else {
+          viewerVideoEl.loop = false;
         }
+        viewerVideoEl.onloadeddata = () => viewerVideoEl.classList.add("ready");
 
         const src = ensureMediaUrl(rec) || "";
         const same = viewerVideoEl.src === src;
@@ -5014,6 +5535,7 @@
           requestAnimationFrame(() => { viewerVideoEl.classList.add("ready"); });
         }
         if (doAuto) { try { viewerVideoEl.play(); } catch {} }
+        preloadNextMedia(viewerItems, viewerIndex);
         return;
       }
 
@@ -5026,6 +5548,7 @@
       if (viewerImgEl.complete && viewerImgEl.naturalWidth > 0) {
         requestAnimationFrame(() => { viewerImgEl.classList.add("ready"); });
       }
+      preloadNextMedia(viewerItems, viewerIndex);
     }
 
     function viewerEnterDir() { // Right
@@ -5239,6 +5762,14 @@
 
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
+      if (e.key === "b" || e.key === "B") {
+        e.preventDefault();
+        applyBanicState(!BANIC_ACTIVE);
+        return;
+      }
+
+      if (BANIC_ACTIVE) return;
+
       if (HELP_OPEN) {
         if (e.key === "Escape") { e.preventDefault(); closeHelp(); }
         return;
@@ -5265,8 +5796,8 @@
         if (k === "ArrowRight" || k === "d" || k === "D" || k === "l" || k === "L" || k === "Enter") { e.preventDefault(); viewerEnterDir(); return; }
 
         if (k === " " ) { e.preventDefault(); toggleViewerVideoPlayPause(); return; }
-        if (k === "q" || k === "Q" || k === "u" || k === "U") { e.preventDefault(); seekViewerVideo(-10); return; }
-        if (k === "e" || k === "E" || k === "o" || k === "O") { e.preventDefault(); seekViewerVideo(10); return; }
+        if (k === "q" || k === "Q" || k === "u" || k === "U") { e.preventDefault(); seekViewerVideo(-videoSkipStepSeconds()); return; }
+        if (k === "e" || k === "E" || k === "o" || k === "O") { e.preventDefault(); seekViewerVideo(videoSkipStepSeconds()); return; }
 
         if (k === "f" || k === "F" || k === "h" || k === "H") { e.preventDefault(); cycleFilterMode(); return; }
         if (k === "r" || k === "R" || k === "y" || k === "Y") { e.preventDefault(); toggleRandomMode(); return; }
@@ -5274,10 +5805,7 @@
 
         if (k === "Shift") {
           e.preventDefault();
-          WS.view.slideshowModeIndex = (WS.view.slideshowModeIndex + 1) % WS.view.slideshowDurations.length;
-          const ms = WS.view.slideshowDurations[WS.view.slideshowModeIndex] | 0;
-          if (!ms) { stopSlideshow(); showStatusMessage("Slideshow: Off"); }
-          else { startSlideshow(ms); showStatusMessage(`Slideshow: ${Math.round(ms / 1000)}s`); }
+          handleSlideshowHotkey(true);
           return;
         }
 
@@ -5316,8 +5844,8 @@
         if (k === "ArrowRight" || k === "d" || k === "D" || k === "l" || k === "L" || k === "Enter") { e.preventDefault(); viewerEnterDir(); return; }
 
         if (k === " " ) { e.preventDefault(); toggleViewerVideoPlayPause(); return; }
-        if (k === "q" || k === "Q" || k === "u" || k === "U") { e.preventDefault(); seekViewerVideo(-10); return; }
-        if (k === "e" || k === "E" || k === "o" || k === "O") { e.preventDefault(); seekViewerVideo(10); return; }
+        if (k === "q" || k === "Q" || k === "u" || k === "U") { e.preventDefault(); seekViewerVideo(-videoSkipStepSeconds()); return; }
+        if (k === "e" || k === "E" || k === "o" || k === "O") { e.preventDefault(); seekViewerVideo(videoSkipStepSeconds()); return; }
 
         if (k === "f" || k === "F" || k === "h" || k === "H") { e.preventDefault(); cycleFilterMode(); return; }
         if (k === "r" || k === "R" || k === "y" || k === "Y") { e.preventDefault(); toggleRandomMode(); return; }
@@ -5325,10 +5853,7 @@
 
         if (k === "Shift") {
           e.preventDefault();
-          WS.view.slideshowModeIndex = (WS.view.slideshowModeIndex + 1) % WS.view.slideshowDurations.length;
-          const ms = WS.view.slideshowDurations[WS.view.slideshowModeIndex] | 0;
-          if (!ms) { stopSlideshow(); showSlideshowMessage("Slideshow: Off"); }
-          else { startSlideshow(ms); showSlideshowMessage(`Slideshow: ${Math.round(ms / 1000)}s`); }
+          handleSlideshowHotkey(false);
           return;
         }
 
@@ -5359,10 +5884,7 @@
 
       if (k === "Shift") {
         e.preventDefault();
-        WS.view.slideshowModeIndex = (WS.view.slideshowModeIndex + 1) % WS.view.slideshowDurations.length;
-        const ms = WS.view.slideshowDurations[WS.view.slideshowModeIndex] | 0;
-        if (!ms) { stopSlideshow(); showSlideshowMessage("Slideshow: Off"); }
-        else { startSlideshow(ms); showSlideshowMessage(`Slideshow: ${Math.round(ms / 1000)}s`); }
+        handleSlideshowHotkey(false);
         return;
       }
     });
