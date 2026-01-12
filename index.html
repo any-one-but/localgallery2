@@ -36,17 +36,31 @@
     }
 
     :root[data-theme="superdark"] {
-      --color0-primary: hsl(0, 0%, 92%);
-      --color0-secondary: hsl(0, 0%, 68%);
-      --color0-tertirary: hsl(0, 0%, 45%);
+      --color0-primary: hsl(0, 0%, 100%);
+      --color0-secondary: hsl(0, 0%, 70%);
+      --color0-tertirary: hsl(0, 0%, 42%);
 
-      --color1-primary: hsl(220, 35%, 2%);
-      --color1-primary-transparent: hsla(220, 35%, 2%, .9);
-      --color1-secondary: hsl(222, 30%, 6%);
-      --color1-secondary-transparent: hsla(222, 30%, 6%, .6);
-      --color1-tertiary: hsl(222, 25%, 10%);
+      --color1-primary: hsl(0, 0%, 0%);
+      --color1-primary-transparent: hsla(0, 0%, 0%, .9);
+      --color1-secondary: hsl(0, 0%, 0%);
+      --color1-secondary-transparent: hsla(0, 0%, 0%, .6);
+      --color1-tertiary: hsl(0, 0%, 12%);
 
-      --anchor-internal-color2-primary: hsl(195, 100%, 55%);
+      --anchor-internal-color2-primary: hsl(0, 0%, 85%);
+    }
+
+    :root[data-theme="retrodyne"] {
+      --color0-primary: hsl(220, 12%, 22%);
+      --color0-secondary: hsl(44, 70%, 70%);
+      --color0-tertirary: hsl(220, 12%, 55%);
+
+      --color1-primary: hsl(0, 0%, 94%);
+      --color1-primary-transparent: hsla(0, 0%, 94%, .9);
+      --color1-secondary: hsl(0, 0%, 88%);
+      --color1-secondary-transparent: hsla(0, 0%, 88%, .65);
+      --color1-tertiary: hsl(0, 0%, 80%);
+
+      --anchor-internal-color2-primary: hsl(44, 70%, 55%);
     }
 
     :root[data-theme="synthwave"] {
@@ -75,6 +89,48 @@
       --color1-tertiary: hsl(150, 25%, 7%);
 
       --anchor-internal-color2-primary: hsl(45, 90%, 55%);
+    }
+
+    :root[data-theme="azure"] {
+      --color0-primary: hsl(210, 45%, 92%);
+      --color0-secondary: hsl(210, 35%, 70%);
+      --color0-tertirary: hsl(210, 25%, 50%);
+
+      --color1-primary: hsl(210, 35%, 10%);
+      --color1-primary-transparent: hsla(210, 35%, 10%, .85);
+      --color1-secondary: hsl(210, 30%, 16%);
+      --color1-secondary-transparent: hsla(210, 30%, 16%, .55);
+      --color1-tertiary: hsl(210, 28%, 7%);
+
+      --anchor-internal-color2-primary: hsl(35, 95%, 55%);
+    }
+
+    :root[data-theme="ember"] {
+      --color0-primary: hsl(18, 60%, 92%);
+      --color0-secondary: hsl(18, 35%, 70%);
+      --color0-tertirary: hsl(18, 30%, 50%);
+
+      --color1-primary: hsl(14, 35%, 10%);
+      --color1-primary-transparent: hsla(14, 35%, 10%, .85);
+      --color1-secondary: hsl(14, 30%, 16%);
+      --color1-secondary-transparent: hsla(14, 30%, 16%, .55);
+      --color1-tertiary: hsl(14, 28%, 7%);
+
+      --anchor-internal-color2-primary: hsl(195, 90%, 55%);
+    }
+
+    :root[data-theme="amber"] {
+      --color0-primary: hsl(38, 55%, 92%);
+      --color0-secondary: hsl(38, 35%, 70%);
+      --color0-tertirary: hsl(38, 25%, 50%);
+
+      --color1-primary: hsl(32, 35%, 10%);
+      --color1-primary-transparent: hsla(32, 35%, 10%, .85);
+      --color1-secondary: hsl(32, 30%, 16%);
+      --color1-secondary-transparent: hsla(32, 30%, 16%, .55);
+      --color1-tertiary: hsl(32, 28%, 7%);
+
+      --anchor-internal-color2-primary: hsl(200, 95%, 55%);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1328,13 +1384,13 @@
     </div>
 
     <!-- =========================================================
-         Hold ? (Overlay)
+         Hold / (Overlay)
          ========================================================= -->
     <div id="helpHoldOverlay">
       <div id="helpHoldCard">
         <div id="helpHoldHeader">
           <div>Keyboard controls</div>
-          <div class="hint">Hold <strong>?</strong> to keep this on screen</div>
+          <div class="hint">Hold <strong>/</strong> to keep this on screen</div>
         </div>
         <div class="keyboard">
           <div class="kbRow">
@@ -1376,6 +1432,7 @@
               <div class="kbKey"><div class="kbKeyLabel">D</div><div>Right</div></div>
               <div class="kbKey"><div class="kbKeyLabel">C</div><div>Folder</div></div>
               <div class="kbKey"><div class="kbKeyLabel">G</div><div>Gallery</div></div>
+              <div class="kbKey"><div class="kbKeyLabel">X</div><div>Next folder</div></div>
             </div>
             <div class="kbGroup">
               <div class="kbKey"><div class="kbKeyLabel">J</div><div>Left</div></div>
@@ -1383,6 +1440,7 @@
               <div class="kbKey"><div class="kbKeyLabel">L</div><div>Right</div></div>
               <div class="kbKey"><div class="kbKeyLabel">N</div><div>Folder</div></div>
               <div class="kbKey"><div class="kbKeyLabel">B</div><div>BANIC!</div></div>
+              <div class="kbKey"><div class="kbKeyLabel">M</div><div>Next folder</div></div>
             </div>
           </div>
           <div class="kbRow">
@@ -1394,7 +1452,7 @@
             <div class="kbGroup">
               <div class="kbKey wide"><div class="kbKeyLabel">Backspace</div><div>Up</div></div>
               <div class="kbKey wide"><div class="kbKeyLabel">Esc</div><div>Close</div></div>
-              <div class="kbKey"><div class="kbKeyLabel">?</div><div>Cheatsheet</div></div>
+              <div class="kbKey"><div class="kbKeyLabel">/</div><div>Cheatsheet</div></div>
             </div>
           </div>
         </div>
@@ -1553,7 +1611,7 @@
         hideIndicesInNames: (typeof src.hideIndicesInNames === "boolean") ? src.hideIndicesInNames : d.hideIndicesInNames,
         hideUnderscoresInNames: (typeof src.hideUnderscoresInNames === "boolean") ? src.hideUnderscoresInNames : d.hideUnderscoresInNames,
         forceTitleCaps: (typeof src.forceTitleCaps === "boolean") ? src.forceTitleCaps : d.forceTitleCaps,
-        colorScheme: (src.colorScheme === "classic" || src.colorScheme === "light" || src.colorScheme === "superdark" || src.colorScheme === "synthwave" || src.colorScheme === "verdant") ? src.colorScheme : d.colorScheme
+        colorScheme: (src.colorScheme === "classic" || src.colorScheme === "light" || src.colorScheme === "superdark" || src.colorScheme === "retrodyne" || src.colorScheme === "synthwave" || src.colorScheme === "verdant" || src.colorScheme === "azure" || src.colorScheme === "ember" || src.colorScheme === "amber") ? src.colorScheme : d.colorScheme
       };
       return out;
     }
@@ -2052,11 +2110,12 @@
         <li>Video controls: <code>Space</code> play/pause, <code>Q/E</code> seek back/forward, mirrored by <code>U/O</code>.</li>
         <li>Filters & behaviors: <code>F/H</code> cycle media filter, <code>R/Y</code> toggle random order, <code>C/N</code> cycle folder behavior.</li>
         <li>Slideshow: <code>Shift</code> toggles the slideshow speed set in Options.</li>
+        <li>Jump to next folder’s first file: <code>X</code> or <code>M</code>.</li>
       </ul>
 
       <h2>Other hotkeys & controls</h2>
       <ul>
-        <li>Hold <code>?</code> to show the keyboard cheatsheet overlay (only while the key is held down).</li>
+        <li>Hold <code>/</code> to show the keyboard cheatsheet overlay (only while the key is held down).</li>
         <li>Use the <code>?</code> button in the title bar to open/close this help panel.</li>
       </ul>
 
@@ -2255,8 +2314,12 @@
         { value: "classic", label: "Classic Dark" },
         { value: "light", label: "Light" },
         { value: "superdark", label: "Super Dark" },
+        { value: "retrodyne", label: "Retrodyne" },
         { value: "synthwave", label: "Synthwave" },
-        { value: "verdant", label: "Verdant" }
+        { value: "verdant", label: "Verdant" },
+        { value: "azure", label: "Azure" },
+        { value: "ember", label: "Ember" },
+        { value: "amber", label: "Amber" }
       ];
 
       optionsBodyEl.innerHTML = `
@@ -4572,6 +4635,34 @@
       kickImageThumbsForPreview();
     }
 
+    function jumpToNextFolderFirstFile() {
+      if (!WS.root || !WS.nav.dirNode) return;
+      if (WS.view.dirSearchPinned && WS.view.searchRootActive) return;
+      if (WS.view.favoritesMode && WS.view.favoritesRootActive) return;
+
+      const nextDir = getNextSiblingDirWithFiles(WS.nav.dirNode);
+      if (!nextDir) return;
+
+      WS.nav.dirNode = nextDir;
+      TAG_EDIT_PATH = null;
+      closeBulkTagPanel();
+      syncBulkSelectionForCurrentDir();
+      syncFavoritesUi();
+      syncTagUiForCurrentDir();
+      rebuildDirectoriesEntries();
+
+      const idx = firstFileEntryIndexForDirEntries();
+      if (idx >= 0) WS.nav.selectedIndex = idx;
+      else WS.nav.selectedIndex = findNearestSelectableIndex(0, 1);
+
+      syncPreviewToSelection();
+      renderDirectoriesPane();
+      renderPreviewPane(true);
+      syncButtons();
+      kickVideoThumbsForPreview();
+      kickImageThumbsForPreview();
+    }
+
     /* =========================================================
        Preview Pane
        - inline breadcrumb + counts
@@ -5907,6 +5998,11 @@
       syncDirectoriesToViewerState();
     }
 
+    function viewerJumpToNextFolderFirstFile() {
+      if (!viewerDirNode) return;
+      moveToNextDirectoryFile();
+    }
+
     function renderViewerItem(idx) {
       if (!viewerItems.length) {
         if (viewerImgEl) viewerImgEl.style.display = "none";
@@ -6240,7 +6336,7 @@
 
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
-      if (e.key === "?") {
+      if (e.key === "/") {
         if (isTextInputTarget(e.target)) return;
         e.preventDefault();
         setHelpHold(true);
@@ -6287,6 +6383,7 @@
         if (k === "f" || k === "F" || k === "h" || k === "H") { e.preventDefault(); cycleFilterMode(); return; }
         if (k === "r" || k === "R" || k === "y" || k === "Y") { e.preventDefault(); toggleRandomMode(); return; }
         if (k === "c" || k === "C" || k === "n" || k === "N") { e.preventDefault(); cycleFolderBehavior(); return; }
+        if (k === "x" || k === "X" || k === "m" || k === "M") { e.preventDefault(); viewerJumpToNextFolderFirstFile(); return; }
 
         if (k === "Shift") {
           e.preventDefault();
@@ -6335,6 +6432,7 @@
         if (k === "f" || k === "F" || k === "h" || k === "H") { e.preventDefault(); cycleFilterMode(); return; }
         if (k === "r" || k === "R" || k === "y" || k === "Y") { e.preventDefault(); toggleRandomMode(); return; }
         if (k === "c" || k === "C" || k === "n" || k === "N") { e.preventDefault(); cycleFolderBehavior(); return; }
+        if (k === "x" || k === "X" || k === "m" || k === "M") { e.preventDefault(); jumpToNextFolderFirstFile(); return; }
 
         if (k === "Shift") {
           e.preventDefault();
@@ -6366,6 +6464,7 @@
       if (k === "f" || k === "F" || k === "h" || k === "H") { e.preventDefault(); cycleFilterMode(); return; }
       if (k === "r" || k === "R" || k === "y" || k === "Y") { e.preventDefault(); toggleRandomMode(); return; }
       if (k === "c" || k === "C" || k === "n" || k === "N") { e.preventDefault(); cycleFolderBehavior(); return; }
+      if (k === "x" || k === "X" || k === "m" || k === "M") { e.preventDefault(); jumpToNextFolderFirstFile(); return; }
 
       if (k === "Shift") {
         e.preventDefault();
@@ -6375,7 +6474,7 @@
     });
 
     document.addEventListener("keyup", (e) => {
-      if (e.key === "?") setHelpHold(false);
+      if (e.key === "/") setHelpHold(false);
     });
 
     window.addEventListener("blur", () => setHelpHold(false));
