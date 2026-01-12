@@ -21,6 +21,62 @@
       --anchor-internal-color2-primary: hsl(240, 100%, 40%);
     }
 
+    :root[data-theme="light"] {
+      --color0-primary: hsl(215, 25%, 15%);
+      --color0-secondary: hsl(215, 18%, 35%);
+      --color0-tertirary: hsl(215, 12%, 55%);
+
+      --color1-primary: hsl(0, 0%, 97%);
+      --color1-primary-transparent: hsla(0, 0%, 97%, .9);
+      --color1-secondary: hsl(210, 22%, 92%);
+      --color1-secondary-transparent: hsla(210, 22%, 92%, .7);
+      --color1-tertiary: hsl(210, 18%, 85%);
+
+      --anchor-internal-color2-primary: hsl(215, 85%, 35%);
+    }
+
+    :root[data-theme="superdark"] {
+      --color0-primary: hsl(0, 0%, 92%);
+      --color0-secondary: hsl(0, 0%, 68%);
+      --color0-tertirary: hsl(0, 0%, 45%);
+
+      --color1-primary: hsl(220, 35%, 2%);
+      --color1-primary-transparent: hsla(220, 35%, 2%, .9);
+      --color1-secondary: hsl(222, 30%, 6%);
+      --color1-secondary-transparent: hsla(222, 30%, 6%, .6);
+      --color1-tertiary: hsl(222, 25%, 10%);
+
+      --anchor-internal-color2-primary: hsl(195, 100%, 55%);
+    }
+
+    :root[data-theme="synthwave"] {
+      --color0-primary: hsl(290, 80%, 92%);
+      --color0-secondary: hsl(290, 45%, 74%);
+      --color0-tertirary: hsl(285, 32%, 52%);
+
+      --color1-primary: hsl(258, 35%, 12%);
+      --color1-primary-transparent: hsla(258, 35%, 12%, .88);
+      --color1-secondary: hsl(264, 30%, 18%);
+      --color1-secondary-transparent: hsla(264, 30%, 18%, .55);
+      --color1-tertiary: hsl(260, 30%, 8%);
+
+      --anchor-internal-color2-primary: hsl(190, 95%, 55%);
+    }
+
+    :root[data-theme="verdant"] {
+      --color0-primary: hsl(140, 30%, 92%);
+      --color0-secondary: hsl(140, 20%, 72%);
+      --color0-tertirary: hsl(140, 15%, 50%);
+
+      --color1-primary: hsl(150, 30%, 10%);
+      --color1-primary-transparent: hsla(150, 30%, 10%, .85);
+      --color1-secondary: hsl(150, 25%, 16%);
+      --color1-secondary-transparent: hsla(150, 25%, 16%, .55);
+      --color1-tertiary: hsl(150, 25%, 7%);
+
+      --anchor-internal-color2-primary: hsl(45, 90%, 55%);
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
@@ -247,13 +303,6 @@
     #directoriesBtns {
       display: flex;
       gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    #directoriesFavoritesRow {
-      display: none;
-      gap: 6px;
       flex-wrap: wrap;
       align-items: center;
     }
@@ -602,6 +651,7 @@
     .tag {
       display: inline-block;
       font-size: 11px;
+      font-weight: 600;
       padding: 2px 8px;
       border-radius: 2px;
       border: 1px solid var(--color1-tertiary);
@@ -626,20 +676,6 @@
       background: #ef4444;
       color: #fff;
       border-color: #b91c1c;
-    }
-
-    .tag.include {
-      background: #3b82f6;
-      color: #fff;
-      border-color: #1d4ed8;
-      font-weight: 800;
-    }
-
-    .tag.exclude {
-      background: #ef4444;
-      color: #fff;
-      border-color: #b91c1c;
-      font-weight: 800;
     }
 
     .mini {
@@ -695,8 +731,8 @@
     #filePreviewViewport video {
       max-width: 100%;
       max-height: 100%;
-      width: 100%;
-      height: 100%;
+      width: auto;
+      height: auto;
       object-fit: contain;
       background: #000;
       opacity: 0;
@@ -1234,7 +1270,6 @@
                 <button id="toggleTagsBtn" type="button" class="miniBtn">Tags</button>
               </div>
             </div>
-            <div id="directoriesFavoritesRow"></div>
             <div id="directoriesSearchRow">
               <input id="directoriesSearchInput" class="tagEditInput" type="text" placeholder="Search this folder..." />
               <button id="directoriesSearchClearBtn" type="button" class="miniBtn">X</button>
@@ -1491,7 +1526,8 @@
         slideshowDefault: "cycle",
         hideIndicesInNames: true,
         hideUnderscoresInNames: false,
-        forceTitleCaps: false
+        forceTitleCaps: false,
+        colorScheme: "classic"
       };
     }
 
@@ -1516,7 +1552,8 @@
         slideshowDefault: (src.slideshowDefault === "cycle" || src.slideshowDefault === "1" || src.slideshowDefault === "3" || src.slideshowDefault === "5" || src.slideshowDefault === "10") ? src.slideshowDefault : d.slideshowDefault,
         hideIndicesInNames: (typeof src.hideIndicesInNames === "boolean") ? src.hideIndicesInNames : d.hideIndicesInNames,
         hideUnderscoresInNames: (typeof src.hideUnderscoresInNames === "boolean") ? src.hideUnderscoresInNames : d.hideUnderscoresInNames,
-        forceTitleCaps: (typeof src.forceTitleCaps === "boolean") ? src.forceTitleCaps : d.forceTitleCaps
+        forceTitleCaps: (typeof src.forceTitleCaps === "boolean") ? src.forceTitleCaps : d.forceTitleCaps,
+        colorScheme: (src.colorScheme === "classic" || src.colorScheme === "light" || src.colorScheme === "superdark" || src.colorScheme === "synthwave" || src.colorScheme === "verdant") ? src.colorScheme : d.colorScheme
       };
       return out;
     }
@@ -1576,10 +1613,21 @@
       WS.view.folderBehavior = String(opt.defaultFolderBehavior || "slide");
       WS.view.showFolderScores = !!opt.showFolderScores;
       WS.view.tagFilterMode = (opt.tagFilterMode === "and") ? "and" : "or";
+      applyColorSchemeFromOptions();
+    }
+
+    function applyColorSchemeFromOptions() {
+      const opt = WS.meta && WS.meta.options ? WS.meta.options : null;
+      const scheme = opt ? String(opt.colorScheme || "classic") : "classic";
+      const root = document.documentElement;
+      if (!root) return;
+      if (scheme === "classic") root.removeAttribute("data-theme");
+      else root.setAttribute("data-theme", scheme);
     }
 
     function applyOptionsEverywhere(invalidateThumbs = false) {
       if (!WS.root) {
+        applyColorSchemeFromOptions();
         syncButtons();
         return;
       }
@@ -1588,6 +1636,7 @@
         invalidateAllThumbs();
       }
 
+      applyColorSchemeFromOptions();
       rebuildDirectoriesEntries();
       WS.nav.selectedIndex = findNearestSelectableIndex(WS.nav.selectedIndex, 1);
       syncPreviewToSelection();
@@ -1812,7 +1861,6 @@
     const directoriesListEl = $("directoriesList");
     const favoritesBtn = $("favoritesBtn");
     const toggleTagsBtn = $("toggleTagsBtn");
-    const directoriesFavoritesRowEl = $("directoriesFavoritesRow");
     const directoriesTagsRowEl = $("directoriesTagsRow");
     const directoriesBulkRowEl = $("directoriesBulkRow");
     const directoriesSearchInput = $("directoriesSearchInput");
@@ -2203,6 +2251,14 @@
         { value: "expanded", label: "Expanded" }
       ];
 
+      const colorSchemes = [
+        { value: "classic", label: "Classic Dark" },
+        { value: "light", label: "Light" },
+        { value: "superdark", label: "Super Dark" },
+        { value: "synthwave", label: "Synthwave" },
+        { value: "verdant", label: "Verdant" }
+      ];
+
       optionsBodyEl.innerHTML = `
         <div class="label" style="margin-bottom:8px;">Preferences are saved alongside scores/tags (or localStorage fallback).</div>
 
@@ -2231,6 +2287,7 @@
         ${makeSelectRow("Video thumbnail size", "Controls generated video thumbnail quality (smaller is faster).", "opt_videoThumbSize", String(opt.videoThumbSize || "medium"), thumbModes)}
 
         <h2>Display</h2>
+        ${makeSelectRow("Color scheme", "Switch the overall interface palette.", "opt_colorScheme", String(opt.colorScheme || "classic"), colorSchemes)}
         ${makeSelectRow("Preview mode", "Controls how folders are shown in the preview pane.", "opt_previewMode", String(opt.previewMode || "grid"), previewModes)}
         ${makeCheckRow("Show file extensions", "Show .jpg / .mp4 in file names.", "opt_showFileExtensions", !!opt.showFileExtensions)}
         ${makeCheckRow("Hide indices from display names", "Hide numeric prefixes like '01 - '.", "opt_hideIndicesInNames", !!opt.hideIndicesInNames)}
@@ -2306,6 +2363,9 @@
       bindSelect("opt_slideshowDefault", "slideshowDefault", false);
       bindSelect("opt_imageThumbSize", "imageThumbSize", true);
       bindSelect("opt_videoThumbSize", "videoThumbSize", true);
+      bindSelect("opt_colorScheme", "colorScheme", false, () => {
+        applyColorSchemeFromOptions();
+      });
       bindSelect("opt_previewMode", "previewMode", false, () => {
         renderPreviewPane(true);
       });
@@ -2678,11 +2738,31 @@
       };
     }
 
+    function metaMakeTagFiltersLogObject() {
+      return {
+        include: normalizeTagList(Array.from(WS.view.tagIncludeFilters || [])),
+        exclude: normalizeTagList(Array.from(WS.view.tagExcludeFilters || []))
+      };
+    }
+
+    function metaApplyTagFiltersFromLog(log) {
+      const src = log && typeof log === "object" ? log.tagFilters : null;
+      const include = normalizeTagList(src && Array.isArray(src.include) ? src.include : []);
+      const exclude = normalizeTagList(src && Array.isArray(src.exclude) ? src.exclude : []);
+      const includeSet = new Set(include);
+      const excludeClean = exclude.filter(t => !includeSet.has(t));
+      WS.view.tagIncludeFilters.clear();
+      WS.view.tagExcludeFilters.clear();
+      for (const t of includeSet) WS.view.tagIncludeFilters.add(t);
+      for (const t of excludeClean) WS.view.tagExcludeFilters.add(t);
+    }
+
     function metaMakeOptionsLogObject() {
       return {
         schema: 1,
         updatedAt: Date.now(),
-        options: normalizeOptions(WS.meta.options || null)
+        options: normalizeOptions(WS.meta.options || null),
+        tagFilters: metaMakeTagFiltersLogObject()
       };
     }
 
@@ -2798,6 +2878,7 @@
     function metaApplyOptionsLog(log) {
       if (!log || typeof log !== "object") return;
       WS.meta.options = normalizeOptions(log.options || null);
+      metaApplyTagFiltersFromLog(log);
       applyDefaultViewFromOptions();
     }
 
@@ -2881,6 +2962,7 @@
         WS.meta.dirTags.set(path, tg.slice());
       }
 
+      metaApplyTagFiltersFromLog(log);
       applyDefaultViewFromOptions();
       syncMetaButtons();
       renderOptionsUi();
@@ -3548,7 +3630,6 @@
         favoritesBtn.classList.toggle("active", !!WS.view.favoritesMode);
         favoritesBtn.disabled = !WS.root;
       }
-      if (!directoriesFavoritesRowEl) return;
     }
 
     function syncTagUiForCurrentDir() {
@@ -3850,34 +3931,6 @@
       kickImageThumbsForPreview();
     }
 
-    function renderDirectoriesFavoritesHeader() {
-      if (!directoriesFavoritesRowEl) return;
-
-      directoriesFavoritesRowEl.innerHTML = "";
-      directoriesFavoritesRowEl.style.display = "none";
-
-      if (!WS.root) return;
-
-      const favDirs = getAllFavoriteDirs();
-      const n = favDirs.length;
-
-      if (!n) return;
-
-      directoriesFavoritesRowEl.style.display = "flex";
-
-      const chip = document.createElement("span");
-      chip.className = "tag" + (WS.view.favoritesMode ? " sel" : "");
-      chip.textContent = `favorites (${n})`;
-      chip.style.cursor = "pointer";
-      chip.title = "Toggle favorites view";
-      chip.addEventListener("click", (e) => {
-        e.stopPropagation();
-        toggleFavoritesMode();
-      });
-
-      directoriesFavoritesRowEl.appendChild(chip);
-    }
-
     function renderDirectoriesTagsHeader() {
       if (!directoriesTagsRowEl || !toggleTagsBtn) return;
 
@@ -3934,6 +3987,8 @@
             WS.view.tagIncludeFilters.add(t);
           }
 
+          WS.meta.dirty = true;
+          metaScheduleSave();
           rebuildDirectoriesEntries();
           WS.nav.selectedIndex = findNearestSelectableIndex(WS.nav.selectedIndex, 1);
           syncPreviewToSelection();
@@ -4103,7 +4158,6 @@
 
       if (!WS.root) {
         directoriesPathEl.textContent = "—";
-        renderDirectoriesFavoritesHeader();
         renderDirectoriesTagsHeader();
         renderDirectoriesBulkHeader();
         directoriesListEl.innerHTML = `<div class="label" style="padding:10px;">Load a folder to begin.</div>`;
@@ -4111,7 +4165,6 @@
       }
 
       directoriesPathEl.textContent = getDirectoriesPathText();
-      renderDirectoriesFavoritesHeader();
       renderDirectoriesTagsHeader();
       renderDirectoriesBulkHeader();
 
