@@ -21,6 +21,62 @@
       --anchor-internal-color2-primary: hsl(240, 100%, 40%);
     }
 
+    body[data-theme="light"] {
+      --color0-primary: hsl(220, 15%, 12%);
+      --color0-secondary: hsl(220, 10%, 35%);
+      --color0-tertirary: hsl(220, 8%, 55%);
+
+      --color1-primary: hsl(0, 0%, 98%);
+      --color1-primary-transparent: hsla(0, 0%, 98%, .85);
+      --color1-secondary: hsl(0, 0%, 94%);
+      --color1-secondary-transparent: hsla(0, 0%, 94%, .6);
+      --color1-tertiary: hsl(0, 0%, 85%);
+
+      --anchor-internal-color2-primary: hsl(220, 80%, 40%);
+    }
+
+    body[data-theme="super-dark"] {
+      --color0-primary: hsl(0, 0%, 92%);
+      --color0-secondary: hsl(0, 0%, 62%);
+      --color0-tertirary: hsl(0, 0%, 38%);
+
+      --color1-primary: hsl(220, 28%, 3%);
+      --color1-primary-transparent: hsla(220, 28%, 3%, .9);
+      --color1-secondary: hsl(220, 24%, 7%);
+      --color1-secondary-transparent: hsla(220, 24%, 7%, .65);
+      --color1-tertiary: hsl(220, 28%, 2%);
+
+      --anchor-internal-color2-primary: hsl(190, 85%, 55%);
+    }
+
+    body[data-theme="aurora"] {
+      --color0-primary: hsl(190, 40%, 92%);
+      --color0-secondary: hsl(190, 25%, 70%);
+      --color0-tertirary: hsl(190, 20%, 48%);
+
+      --color1-primary: hsl(210, 28%, 10%);
+      --color1-primary-transparent: hsla(210, 28%, 10%, .85);
+      --color1-secondary: hsl(210, 26%, 16%);
+      --color1-secondary-transparent: hsla(210, 26%, 16%, .6);
+      --color1-tertiary: hsl(210, 30%, 7%);
+
+      --anchor-internal-color2-primary: hsl(175, 70%, 55%);
+    }
+
+    body[data-theme="sandstorm"] {
+      --color0-primary: hsl(35, 25%, 12%);
+      --color0-secondary: hsl(35, 20%, 30%);
+      --color0-tertirary: hsl(35, 18%, 55%);
+
+      --color1-primary: hsl(40, 70%, 92%);
+      --color1-primary-transparent: hsla(40, 70%, 92%, .85);
+      --color1-secondary: hsl(40, 65%, 88%);
+      --color1-secondary-transparent: hsla(40, 65%, 88%, .6);
+      --color1-tertiary: hsl(40, 60%, 80%);
+
+      --anchor-internal-color2-primary: hsl(25, 80%, 35%);
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
@@ -366,6 +422,63 @@
     .dirRight .voteBtn {
       width: 18px;
       text-align: center;
+    }
+
+    .dirMenuWrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .dirMenuBtn {
+      border: 1px solid var(--color1-tertiary);
+      background: var(--color1-secondary);
+      color: var(--color0-secondary);
+      font-size: 14px;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      border-radius: 2px;
+    }
+
+    .dirMenuBtn:hover {
+      background: var(--color1-secondary-transparent);
+      color: var(--color0-primary);
+    }
+
+    .dirMenu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      min-width: 140px;
+      background: var(--color1-secondary);
+      border: 1px solid var(--color1-tertiary);
+      border-radius: 3px;
+      box-shadow: 0 12px 30px var(--color1-primary-transparent);
+      padding: 6px;
+      display: none;
+      z-index: 50;
+    }
+
+    .dirMenuWrap.open .dirMenu {
+      display: block;
+    }
+
+    .dirMenuItem {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--color0-primary);
+      padding: 6px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 2px;
+    }
+
+    .dirMenuItem:hover {
+      border-color: var(--color1-tertiary);
+      background: var(--color1-secondary-transparent);
     }
 
     /* =========================================================
@@ -1478,12 +1591,14 @@
         videoGallery: "muted",
         imageThumbSize: "medium",
         videoThumbSize: "medium",
+        colorTheme: "dark",
         showFileExtensions: true,
         defaultFilterMode: "all",
         defaultRandomMode: false,
         defaultFolderBehavior: "slide",
         showFolderScores: false,
         tagFilterMode: "or",
+        tagFilterAllowHide: true,
         previewMode: "grid",
         videoSkipStep: "10",
         preloadNextMode: "off",
@@ -1503,12 +1618,14 @@
         videoGallery: (src.videoGallery === "unmuted" || src.videoGallery === "muted" || src.videoGallery === "off") ? src.videoGallery : d.videoGallery,
         imageThumbSize: (src.imageThumbSize === "tiny" || src.imageThumbSize === "small" || src.imageThumbSize === "medium" || src.imageThumbSize === "high") ? src.imageThumbSize : d.imageThumbSize,
         videoThumbSize: (src.videoThumbSize === "tiny" || src.videoThumbSize === "small" || src.videoThumbSize === "medium" || src.videoThumbSize === "high") ? src.videoThumbSize : d.videoThumbSize,
+        colorTheme: (src.colorTheme === "dark" || src.colorTheme === "light" || src.colorTheme === "super-dark" || src.colorTheme === "aurora" || src.colorTheme === "sandstorm") ? src.colorTheme : d.colorTheme,
         showFileExtensions: (typeof src.showFileExtensions === "boolean") ? src.showFileExtensions : d.showFileExtensions,
         defaultFilterMode: (src.defaultFilterMode === "all" || src.defaultFilterMode === "images" || src.defaultFilterMode === "videos" || src.defaultFilterMode === "gifs") ? src.defaultFilterMode : d.defaultFilterMode,
         defaultRandomMode: (typeof src.defaultRandomMode === "boolean") ? src.defaultRandomMode : d.defaultRandomMode,
         defaultFolderBehavior: (src.defaultFolderBehavior === "stop" || src.defaultFolderBehavior === "loop" || src.defaultFolderBehavior === "slide") ? src.defaultFolderBehavior : d.defaultFolderBehavior,
         showFolderScores: (typeof src.showFolderScores === "boolean") ? src.showFolderScores : ((typeof src.defaultShowScores === "boolean") ? src.defaultShowScores : d.showFolderScores),
         tagFilterMode: (src.tagFilterMode === "and" || src.tagFilterMode === "or") ? src.tagFilterMode : d.tagFilterMode,
+        tagFilterAllowHide: (typeof src.tagFilterAllowHide === "boolean") ? src.tagFilterAllowHide : d.tagFilterAllowHide,
         previewMode: (src.previewMode === "grid" || src.previewMode === "expanded") ? src.previewMode : d.previewMode,
         videoSkipStep: (src.videoSkipStep === "3" || src.videoSkipStep === "5" || src.videoSkipStep === "10" || src.videoSkipStep === "30") ? src.videoSkipStep : d.videoSkipStep,
         preloadNextMode: (src.preloadNextMode === "off" || src.preloadNextMode === "on" || src.preloadNextMode === "ultra") ? src.preloadNextMode : d.preloadNextMode,
@@ -1568,6 +1685,12 @@
       optionsStatusLabel.textContent = text || "—";
     }
 
+    function applyThemeFromOptions() {
+      const opt = WS.meta && WS.meta.options ? WS.meta.options : null;
+      const theme = opt ? String(opt.colorTheme || "dark") : "dark";
+      if (document.body) document.body.dataset.theme = theme;
+    }
+
     function applyDefaultViewFromOptions() {
       const opt = WS.meta && WS.meta.options ? WS.meta.options : null;
       if (!opt) return;
@@ -1576,9 +1699,12 @@
       WS.view.folderBehavior = String(opt.defaultFolderBehavior || "slide");
       WS.view.showFolderScores = !!opt.showFolderScores;
       WS.view.tagFilterMode = (opt.tagFilterMode === "and") ? "and" : "or";
+      applyThemeFromOptions();
     }
 
     function applyOptionsEverywhere(invalidateThumbs = false) {
+      applyThemeFromOptions();
+
       if (!WS.root) {
         syncButtons();
         return;
@@ -1645,6 +1771,7 @@
         tagFilterMode: "or",
         tagIncludeFilters: new Set(),
         tagExcludeFilters: new Set(),
+        dirMenuPath: "",
         bulkTagPanelOpen: false,
         bulkTagSelectedPaths: new Set(),
         bulkTagPickSet: new Set(),
@@ -1741,6 +1868,7 @@
       WS.view.tagPanelOpen = false;
       WS.view.tagIncludeFilters.clear();
       WS.view.tagExcludeFilters.clear();
+      WS.view.dirMenuPath = "";
       WS.view.bulkTagPanelOpen = false;
       WS.view.bulkTagSelectedPaths = new Set();
       WS.view.bulkTagPickSet.clear();
@@ -2198,9 +2326,22 @@
         { value: "high", label: "Very high" }
       ];
 
+      const themeModes = [
+        { value: "dark", label: "Dark (classic)" },
+        { value: "light", label: "Light mode" },
+        { value: "super-dark", label: "Super dark" },
+        { value: "aurora", label: "Aurora" },
+        { value: "sandstorm", label: "Sandstorm" }
+      ];
+
       const previewModes = [
         { value: "grid", label: "Grid" },
         { value: "expanded", label: "Expanded" }
+      ];
+
+      const tagCycleModes = [
+        { value: "on", label: "Inactive → Active → Hide" },
+        { value: "off", label: "Inactive ↔ Active" }
       ];
 
       optionsBodyEl.innerHTML = `
@@ -2219,6 +2360,7 @@
         ${makeSelectRow("Directory sort", "Sort folders by name or score.", "opt_dirSortMode", WS.meta.dirSortMode === "score" ? "score" : "name", dirSortModes)}
         ${makeSelectRow("Folder scores", "Show folder score controls in folder lists + previews.", "opt_showFolderScores", WS.view.showFolderScores ? "on" : "off", onOffModes)}
         ${makeSelectRow("Tag filter mode", "When multiple tags are active, match any or all tags.", "opt_tagFilterMode", String(opt.tagFilterMode || "or"), tagFilterModes)}
+        ${makeSelectRow("Tag filter cycle", "Pick whether tags can be hidden or just toggled on/off.", "opt_tagFilterAllowHide", opt.tagFilterAllowHide ? "on" : "off", tagCycleModes)}
 
         <h2>Playback</h2>
         ${makeSelectRow("Video skip step", "Seek increment for Q/E/U/O shortcuts.", "opt_videoSkipStep", String(opt.videoSkipStep || "10"), skipSteps)}
@@ -2231,6 +2373,7 @@
         ${makeSelectRow("Video thumbnail size", "Controls generated video thumbnail quality (smaller is faster).", "opt_videoThumbSize", String(opt.videoThumbSize || "medium"), thumbModes)}
 
         <h2>Display</h2>
+        ${makeSelectRow("Color scheme", "Swap between light/dark themes.", "opt_colorTheme", String(opt.colorTheme || "dark"), themeModes)}
         ${makeSelectRow("Preview mode", "Controls how folders are shown in the preview pane.", "opt_previewMode", String(opt.previewMode || "grid"), previewModes)}
         ${makeCheckRow("Show file extensions", "Show .jpg / .mp4 in file names.", "opt_showFileExtensions", !!opt.showFileExtensions)}
         ${makeCheckRow("Hide indices from display names", "Hide numeric prefixes like '01 - '.", "opt_hideIndicesInNames", !!opt.hideIndicesInNames)}
@@ -2298,6 +2441,16 @@
         renderPreviewPane(false, true);
         syncButtons();
       });
+      bindSelect("opt_tagFilterAllowHide", "tagFilterAllowHide", false, (val) => {
+        const allowHide = val === "on";
+        if (!allowHide) WS.view.tagExcludeFilters.clear();
+        rebuildDirectoriesEntries();
+        WS.nav.selectedIndex = findNearestSelectableIndex(WS.nav.selectedIndex, 1);
+        syncPreviewToSelection();
+        renderDirectoriesPane(true);
+        renderPreviewPane(false, true);
+        syncButtons();
+      }, (val) => val === "on");
       bindSelect("opt_videoSkipStep", "videoSkipStep", false);
       bindSelect("opt_preloadNextMode", "preloadNextMode", false, (val) => {
         if (val === "off") PRELOAD_CACHE = new Map();
@@ -2306,6 +2459,9 @@
       bindSelect("opt_slideshowDefault", "slideshowDefault", false);
       bindSelect("opt_imageThumbSize", "imageThumbSize", true);
       bindSelect("opt_videoThumbSize", "videoThumbSize", true);
+      bindSelect("opt_colorTheme", "colorTheme", false, () => {
+        applyThemeFromOptions();
+      });
       bindSelect("opt_previewMode", "previewMode", false, () => {
         renderPreviewPane(true);
       });
@@ -2343,6 +2499,11 @@
     if (optionsResetBtn) optionsResetBtn.addEventListener("click", () => resetOptionsToDefaults());
     if (optionsOverlay) optionsOverlay.addEventListener("click", (e) => {
       if (e.target === optionsOverlay) closeOptions();
+    });
+    document.addEventListener("click", () => {
+      if (!WS.view.dirMenuPath) return;
+      WS.view.dirMenuPath = "";
+      renderDirectoriesPane(true);
     });
 
     /* =========================================================
@@ -3914,6 +4075,7 @@
       directoriesTagsRowEl.style.display = "flex";
 
       const frag = document.createDocumentFragment();
+      const allowHide = WS.meta && WS.meta.options ? !!WS.meta.options.tagFilterAllowHide : true;
 
       for (let i = 0; i < available.length; i++) {
         const t = available[i];
@@ -3922,16 +4084,25 @@
         chip.className = "tag" + (state === "include" ? " include" : (state === "exclude" ? " exclude" : ""));
         chip.textContent = `${t} (${counts.get(t) || 0})`;
         chip.style.cursor = "pointer";
-        chip.title = state === "include" ? "Tag filter: include" : (state === "exclude" ? "Tag filter: hide" : "Tag filter: off");
+        chip.title = state === "include" ? "Tag filter: include" : (state === "exclude" ? "Tag filter: hide" : (allowHide ? "Tag filter: off" : "Tag filter: off (click to include)"));
         chip.addEventListener("click", (e) => {
           e.stopPropagation();
-          if (WS.view.tagIncludeFilters.has(t)) {
-            WS.view.tagIncludeFilters.delete(t);
-            WS.view.tagExcludeFilters.add(t);
-          } else if (WS.view.tagExcludeFilters.has(t)) {
-            WS.view.tagExcludeFilters.delete(t);
+          if (allowHide) {
+            if (WS.view.tagIncludeFilters.has(t)) {
+              WS.view.tagIncludeFilters.delete(t);
+              WS.view.tagExcludeFilters.add(t);
+            } else if (WS.view.tagExcludeFilters.has(t)) {
+              WS.view.tagExcludeFilters.delete(t);
+            } else {
+              WS.view.tagIncludeFilters.add(t);
+            }
           } else {
-            WS.view.tagIncludeFilters.add(t);
+            if (WS.view.tagIncludeFilters.has(t)) {
+              WS.view.tagIncludeFilters.delete(t);
+            } else {
+              WS.view.tagIncludeFilters.add(t);
+              WS.view.tagExcludeFilters.delete(t);
+            }
           }
 
           rebuildDirectoriesEntries();
@@ -4097,6 +4268,139 @@
       directoriesBulkRowEl.appendChild(btnCancel);
     }
 
+    async function getDirectoryHandleForPath(rootHandle, path) {
+      let handle = rootHandle;
+      const parts = String(path || "").split("/").filter(Boolean);
+      for (let i = 0; i < parts.length; i++) {
+        handle = await handle.getDirectoryHandle(parts[i], { create: false });
+      }
+      return handle;
+    }
+
+    function replacePathPrefix(path, oldPath, newPath) {
+      const p = String(path || "");
+      if (!oldPath) return p;
+      if (p === oldPath) return newPath;
+      if (p.startsWith(oldPath + "/")) return newPath + p.slice(oldPath.length);
+      return p;
+    }
+
+    function renameFoldersInLog(folders, oldPath, newPath) {
+      const src = folders && typeof folders === "object" ? folders : {};
+      const out = {};
+      for (const key of Object.keys(src)) {
+        const nextKey = replacePathPrefix(key, oldPath, newPath);
+        out[nextKey] = src[key];
+      }
+      return out;
+    }
+
+    async function updateFsLogsForRename(oldPath, newPath) {
+      const scoresLog = await metaLoadFsDoc(WS.meta.fsScoresFileHandle);
+      if (scoresLog && scoresLog.folders) {
+        scoresLog.folders = renameFoldersInLog(scoresLog.folders, oldPath, newPath);
+        scoresLog.updatedAt = Date.now();
+        await metaSaveFsDoc(WS.meta.fsScoresFileHandle, scoresLog);
+      }
+
+      const tagsLog = await metaLoadFsDoc(WS.meta.fsTagsFileHandle);
+      if (tagsLog && tagsLog.folders) {
+        tagsLog.folders = renameFoldersInLog(tagsLog.folders, oldPath, newPath);
+        tagsLog.updatedAt = Date.now();
+        await metaSaveFsDoc(WS.meta.fsTagsFileHandle, tagsLog);
+      }
+
+      const legacyLog = await metaLoadFsDoc(WS.meta.fsLegacyFileHandle);
+      if (legacyLog && legacyLog.folders) {
+        legacyLog.folders = renameFoldersInLog(legacyLog.folders, oldPath, newPath);
+        legacyLog.updatedAt = Date.now();
+        await metaSaveFsDoc(WS.meta.fsLegacyFileHandle, legacyLog);
+      }
+    }
+
+    async function rebuildWorkspaceAfterRename(prevDirPath, targetPath) {
+      const rootHandle = WS.meta.fsRootHandle;
+      if (!rootHandle) return;
+      await buildWorkspaceFromDirectoryHandle(rootHandle);
+
+      const dirNode = WS.dirByPath.get(String(prevDirPath || "")) || WS.root;
+      WS.nav.dirNode = dirNode;
+      syncBulkSelectionForCurrentDir();
+      syncFavoritesUi();
+      syncTagUiForCurrentDir();
+      rebuildDirectoriesEntries();
+
+      let idx = 0;
+      if (targetPath) {
+        for (let i = 0; i < WS.nav.entries.length; i++) {
+          const e = WS.nav.entries[i];
+          if (e && e.kind === "dir" && String(e.node?.path || "") === String(targetPath)) { idx = i; break; }
+        }
+      }
+      WS.nav.selectedIndex = findNearestSelectableIndex(idx, 1);
+      syncPreviewToSelection();
+      renderDirectoriesPane();
+      renderPreviewPane(true);
+      syncButtons();
+      kickVideoThumbsForPreview();
+      kickImageThumbsForPreview();
+      syncMetaButtons();
+    }
+
+    async function renameDirectoryFromUi(dirNode) {
+      if (!dirNode) return;
+      if (!WS.meta.fsRootHandle || WS.meta.storageMode !== "fs") {
+        showStatusMessage("Rename requires a writable folder (Load Folder).");
+        return;
+      }
+      const oldPath = String(dirNode.path || "");
+      if (!oldPath) {
+        showStatusMessage("Cannot rename the root folder.");
+        return;
+      }
+
+      const currentName = String(dirNode.name || "folder");
+      const nextName = String(prompt("Rename folder", currentName) || "").trim();
+      if (!nextName || nextName === currentName) return;
+      if (nextName.includes("/")) {
+        showStatusMessage("Folder name cannot include '/'.");
+        return;
+      }
+
+      const parentPath = oldPath.split("/").slice(0, -1).join("/");
+      const newPath = parentPath ? `${parentPath}/${nextName}` : nextName;
+
+      try {
+        const parentHandle = await getDirectoryHandleForPath(WS.meta.fsRootHandle, parentPath);
+        try {
+          await parentHandle.getDirectoryHandle(nextName, { create: false });
+          showStatusMessage("A folder with that name already exists.");
+          return;
+        } catch {}
+
+        const dirHandle = await parentHandle.getDirectoryHandle(currentName, { create: false });
+        if (typeof dirHandle.move === "function") {
+          await dirHandle.move(parentHandle, nextName);
+        } else if (typeof dirHandle.rename === "function") {
+          await dirHandle.rename(nextName);
+        } else {
+          showStatusMessage("Rename isn't supported in this browser.");
+          return;
+        }
+
+        await updateFsLogsForRename(oldPath, newPath);
+
+        TAG_EDIT_PATH = null;
+        WS.view.dirMenuPath = "";
+
+        const prevDirPath = String(WS.nav.dirNode?.path || "");
+        await rebuildWorkspaceAfterRename(prevDirPath, newPath);
+        showStatusMessage("Folder renamed.");
+      } catch {
+        showStatusMessage("Rename failed.");
+      }
+    }
+
     function renderDirectoriesPane(keepScroll = false) {
       const prevScroll = keepScroll ? directoriesListEl.scrollTop : 0;
       directoriesListEl.innerHTML = "";
@@ -4142,6 +4446,7 @@
         let voteHtml = "";
         let tagBtnHtml = "";
         let bulkBtnHtml = "";
+        let menuHtml = "";
         let rightHtml = "";
 
         if (entry.kind === "dir") {
@@ -4164,7 +4469,16 @@
             bulkBtnHtml = `<div class="voteBtn bulkSelBtn" title="Select for bulk tagging">${sel ? "☑" : "☐"}</div>`;
           }
           tagBtnHtml = `<div class="voteBtn tagBtn" title="Edit tags">🏷</div>`;
-          rightHtml = `<div class="dirRight"><div class="dirMeta">${escapeHtml(meta)}</div>${tagBtnHtml}${bulkBtnHtml}</div>`;
+          const menuOpen = String(WS.view.dirMenuPath || "") === p;
+          menuHtml = `
+            <div class="dirMenuWrap${menuOpen ? " open" : ""}" data-path="${escapeHtml(p)}">
+              <button class="dirMenuBtn" type="button" title="Folder actions">⋯</button>
+              <div class="dirMenu">
+                <button class="dirMenuItem rename" type="button">Rename folder</button>
+              </div>
+            </div>
+          `;
+          rightHtml = `<div class="dirRight"><div class="dirMeta">${escapeHtml(meta)}</div>${tagBtnHtml}${bulkBtnHtml}${menuHtml}</div>`;
         } else {
           const rec = WS.fileById.get(entry.id);
           const isVid = rec?.type === "video";
@@ -4215,7 +4529,10 @@
           }
         }
 
-        row.addEventListener("click", () => setDirectoriesSelection(idx));
+        row.addEventListener("click", () => {
+          WS.view.dirMenuPath = "";
+          setDirectoriesSelection(idx);
+        });
 
         if (entry.kind === "dir") {
           const p = entry.node?.path || "";
@@ -4260,6 +4577,29 @@
                   try { input.focus(); input.select(); } catch {}
                 }
               }, 0);
+            });
+          }
+
+          const menuWrap = row.querySelector(".dirMenuWrap");
+          const menuBtn = row.querySelector(".dirMenuBtn");
+          const menuRename = row.querySelector(".dirMenuItem.rename");
+          if (menuWrap) {
+            menuWrap.addEventListener("click", (e) => e.stopPropagation());
+          }
+          if (menuBtn) {
+            menuBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const p = entry.node?.path || "";
+              WS.view.dirMenuPath = (WS.view.dirMenuPath === p) ? "" : p;
+              renderDirectoriesPane(true);
+            });
+          }
+          if (menuRename) {
+            menuRename.addEventListener("click", async (e) => {
+              e.stopPropagation();
+              WS.view.dirMenuPath = "";
+              renderDirectoriesPane(true);
+              await renameDirectoryFromUi(entry.node);
             });
           }
 
